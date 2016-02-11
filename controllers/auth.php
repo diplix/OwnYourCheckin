@@ -5,7 +5,7 @@ function buildRedirectURI() {
 }
 
 function clientID() {
-  return 'https://ownyourgram.com';
+  return 'http'.(Config::$ssl ? 's' : '').'://'.Config::$hostname;
 }
 
 function build_url($parsed_url) {
@@ -60,38 +60,38 @@ $app->get('/signin', function() use($app) {
 });
 
 
-$app->get('/auth/instagram', function() use($app) {
+$app->get('/auth/4sq', function() use($app) {
   if(require_login($app)) {
-    $html = render('instagram-auth', array(
-      'title' => 'Connect Instagram'
+    $html = render('4sq-auth', array(
+      'title' => 'Connect Foursquare'
     ));
     $app->response()->body($html);
   }
 });
 
-$app->get('/auth/instagram-start', function() use($app) {
+$app->get('/auth/4sq-start', function() use($app) {
   if(require_login($app)) {
-    $app->redirect('https://api.instagram.com/oauth/authorize/?client_id='.Config::$instagramClientID.'&redirect_uri='.Config::instagramRedirectURI().'&response_type=code&scope=comments');
+    $app->redirect('https://foursquare.com/oauth2/authenticate/?client_id='.Config::$4sqClientID.'&redirect_uri='.Config::4sqRedirectURI().'&response_type=code');
   }
 });
 
-$app->get('/auth/instagram-callback', function() use($app) {
+$app->get('/auth/4sq-callback', function() use($app) {
   if(require_login($app)) {
 
     $params = $app->request()->params();
 
     if(!array_key_exists('code', $params)) {
       // Error authorizing
-      $app->redirect('/auth/instagram');
+      $app->redirect('/auth/4sq');
     } else {
       $ch = curl_init();
-      curl_setopt($ch, CURLOPT_URL, 'https://api.instagram.com/oauth/access_token');
+      curl_setopt($ch, CURLOPT_URL, 'https://foursquare.com/oauth2/access_token');
       curl_setopt($ch, CURLOPT_POST, true);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-        'client_id' => Config::$instagramClientID,
-        'client_secret' => Config::$instagramClientSecret,
-        'redirect_uri' => Config::instagramRedirectURI(),
+        'client_id' => Config::$4sqClientID,
+        'client_secret' => Config::$4sqClientSecret,
+        'redirect_uri' => Config::4sqRedirectURI(),
         'grant_type' => 'authorization_code',
         'code' => $params['code']
       )));
@@ -99,24 +99,24 @@ $app->get('/auth/instagram-callback', function() use($app) {
       $token = json_decode($response);
 
       if(property_exists($token, 'access_token')) {
-        // Remove the Instagram account info from a past user account if it already exists
-        ORM::for_table('users')->where('instagram_user_id', $token->user->id)->find_result_set()
-          ->set('instagram_user_id','')
-          ->set('instagram_access_token','')
+        // Remove the Foursquare account info from a past user account if it already exists
+        ORM::for_table('users')->where('4sq_user_id', $token->user->id)->find_result_set()
+          ->set('4sq_user_id','')
+          ->set('4sq_access_token','')
           ->save();
 
-        // Update the user record with the instagram access token
+        // Update the user record with the Foursquare access token
         $user = ORM::for_table('users')->find_one($_SESSION['user_id']);
-        $user->instagram_access_token = $token->access_token;
-        $user->instagram_user_id = $token->user->id;
-        $user->instagram_response = $response;
+        $user->4sq_access_token = $token->access_token;
+        $user->4sq_user_id = $token->user->id;
+        $user->4sq_response = $response;
         $user->save();
       } else {
-        $app->redirect('/auth/instagram');
+        $app->redirect('/auth/4sq');
       }
     }
 
-    $app->redirect('/instagram');
+    $app->redirect('/4sq');
   }
 });
 
@@ -289,7 +289,7 @@ $app->get('/auth/callback', function() use($app) {
   unset($_SESSION['auth_state']);
 
   if($redirectToDashboardImmediately) {
-    $app->redirect('/instagram', 301);
+    $app->redirect('/4sq', 301);
   } else {
     $html = render('auth_callback', array(
       'title' => 'Sign In',
