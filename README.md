@@ -1,26 +1,7 @@
-OwnYourGram
-===========
+OwnYourCheckin
+==============
 
-https://ownyourgram.com
-
-
-### Configuring the Instagram Webhook
-
-https://www.instagram.com/developer/subscriptions/
-
-After deploying the site, create the subscription to receive a callback post when
-any user who has authorized the application posts a new photo.
-
-```
-curl -F 'client_id=x' \
-     -F 'client_secret=x' \
-     -F 'object=user' \
-     -F 'aspect=media' \
-     -F 'verify_token=1234567890' \
-     -F 'callback_url=http://ownyourgram.com/instagram/callback' \
-     https://api.instagram.com/v1/subscriptions/
-```
-
+build on https://github.com/aaronpk/OwnYourGram
 
 
 ### Contributing
