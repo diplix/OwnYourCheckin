@@ -60,63 +60,74 @@ $app->get('/signin', function() use($app) {
 });
 
 
-$app->get('/auth/4sq', function() use($app) {
+$app->get('/auth/fsq', function() use($app) {
   if(require_login($app)) {
-    $html = render('4sq-auth', array(
+    $html = render('fsq-auth', array(
       'title' => 'Connect Foursquare'
     ));
     $app->response()->body($html);
   }
 });
 
-$app->get('/auth/4sq-start', function() use($app) {
+$app->get('/auth/fsq-start', function() use($app) {
   if(require_login($app)) {
-    $app->redirect('https://foursquare.com/oauth2/authenticate/?client_id='.Config::$4sqClientID.'&redirect_uri='.Config::4sqRedirectURI().'&response_type=code');
+    $app->redirect('https://foursquare.com/oauth2/authenticate/?client_id='.Config::$fsqClientID.'&redirect_uri='.Config::fsqRedirectURI().'&response_type=code');
   }
 });
 
-$app->get('/auth/4sq-callback', function() use($app) {
+$app->get('/auth/fsq-callback', function() use($app) {
   if(require_login($app)) {
 
     $params = $app->request()->params();
 
     if(!array_key_exists('code', $params)) {
       // Error authorizing
-      $app->redirect('/auth/4sq');
+      $app->redirect('/auth/fsq');
     } else {
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, 'https://foursquare.com/oauth2/access_token');
       curl_setopt($ch, CURLOPT_POST, true);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-        'client_id' => Config::$4sqClientID,
-        'client_secret' => Config::$4sqClientSecret,
-        'redirect_uri' => Config::4sqRedirectURI(),
+        'client_id' => Config::$fsqClientID,
+        'client_secret' => Config::$fsqClientSecret,
+        'redirect_uri' => Config::fsqRedirectURI(),
         'grant_type' => 'authorization_code',
         'code' => $params['code']
       )));
       $response = curl_exec($ch);
+      //echo $response;
       $token = json_decode($response);
 
       if(property_exists($token, 'access_token')) {
+		  // get userID, since that doesn’t come with the access_token
+	      $ch = curl_init();
+    	  curl_setopt($ch, CURLOPT_URL, 'https://api.foursquare.com/v2/users/self?v=20160212&oauth_token='.$token->access_token);
+    	  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    	  $response2 = curl_exec($ch);
+    	  $user = json_decode($response2);
+    	  //echo $response2;
+    	  $user_id = $user->response->user->id;
+
         // Remove the Foursquare account info from a past user account if it already exists
-        ORM::for_table('users')->where('4sq_user_id', $token->user->id)->find_result_set()
-          ->set('4sq_user_id','')
-          ->set('4sq_access_token','')
+        // no user info from foursquare, so no removal
+        ORM::for_table('users')->where('fsq_user_id', $user_id)->find_result_set()
+          ->set('fsq_user_id','')
+          ->set('fsq_access_token','')
           ->save();
 
         // Update the user record with the Foursquare access token
         $user = ORM::for_table('users')->find_one($_SESSION['user_id']);
-        $user->4sq_access_token = $token->access_token;
-        $user->4sq_user_id = $token->user->id;
-        $user->4sq_response = $response;
+        $user->fsq_access_token = $token->access_token;
+        $user->fsq_user_id = $user_id;
+        $user->fsq_response = $response;
         $user->save();
       } else {
-        $app->redirect('/auth/4sq');
+        $app->redirect('/auth/fsq');
       }
     }
 
-    $app->redirect('/4sq');
+    $app->redirect('/fsq');
   }
 });
 
@@ -289,7 +300,7 @@ $app->get('/auth/callback', function() use($app) {
   unset($_SESSION['auth_state']);
 
   if($redirectToDashboardImmediately) {
-    $app->redirect('/4sq', 301);
+    $app->redirect('/fsq', 301);
   } else {
     $html = render('auth_callback', array(
       'title' => 'Sign In',
