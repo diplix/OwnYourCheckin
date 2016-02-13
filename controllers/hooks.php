@@ -1,6 +1,6 @@
 <?php
 
-$app->post('/instagram/callback', function() use($app) {
+$app->post('/fsq/callback', function() use($app) {
   // Will be something like this
   /*
   [
@@ -23,12 +23,25 @@ $app->post('/instagram/callback', function() use($app) {
   */
 
   // Queue a job to process this request
-  bs()->putInTube(Config::$hostname.'-worker', $app->request()->getBody());
+  // foursquare sends the json url encoded
+	/*
+	$checkin = "";
+	$params = $app->request()->params();
+	if(!array_key_exists('checkin', $params)) {
+		$checkin = urldecode($params->checkin);
+	}
+	*/
+
+	$params = $app->request()->params();
+	$checkin = urldecode($params['checkin']);
+	//bs()->putInTube(Config::$hostname.'-worker', urldecode($app->request()->getBody()));
+	bs()->putInTube(Config::$hostname.'-worker', $checkin);
 });
 
-// Respond to the callback challenge from Instagram
+// Respond to the callback challenge from Foursquare
 // http://instagram.com/developer/realtime/
-$app->get('/instagram/callback', function() use($app) {
+// probably won’t need this for Foursquare...
+$app->get('/fsq/callback', function() use($app) {
   $params = $app->request()->params();
   if(array_key_exists('hub_challenge', $params))
     $app->response()->body($params['hub_challenge']);
