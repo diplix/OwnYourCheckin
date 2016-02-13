@@ -106,6 +106,8 @@ function micropub_post($endpoint, $access_token, $params, $photo_filename=false,
     $postfields['category'] = $params['category'];
   if(k($params, 'place_name'))
     $postfields['place_name'] = $params['place_name'];
+  if(k($params, 'place_url'))
+    $postfields['place_url'] = $params['place_url'];
   if(k($params, 'location'))
     $postfields['location'] = $params['location'];
   if(k($params, 'published'))
@@ -144,48 +146,57 @@ function micropub_post($endpoint, $access_token, $params, $photo_filename=false,
   );
 }
 
-// Given an Instagram photo object, return an h-entry array with all the necessary keys
-function h_entry_from_photo(&$user, &$photo) {
+// Given an Foursquare photo object, return an h-entry array with all the necessary keys
+function h_entry_from_checkin(&$user, &$photo) {
   $entry = array(
     'published' => null,
     'location' => null,
     'place_name' => null,
+    'place_url' => null,
     'category' => array(),
     'content' => '',
     'syndication' => ''
   );
-
-  $entry['published'] = date('c', $photo->created_time);
+  //print_r($photo);
+  $entry['published'] = date('c', $photo->createdAt);
 
   // Look up the timezone of the photo if location data is present
-  if(property_exists($photo, 'location') && $photo->location) {
-    if($tz = get_timezone($photo->location->latitude, $photo->location->longitude)) {
-      $d = DateTime::createFromFormat('U', $photo->created_time);
+  if(property_exists($photo, 'location') && $photo->venue->location) {
+    if($tz = get_timezone($photo->venue->location->lat, $photo->venue->location->lng)) {
+      $d = DateTime::createFromFormat('U', $photo->createdAt);
       $d->setTimeZone($tz);
       $entry['published'] = $d->format('c');
     }
   }
 
-  if($photo->location)
-    $entry['location'] = 'geo:' . $photo->location->latitude . ',' . $photo->location->longitude;
+  if($photo->venue->location)
+    $entry['location'] = 'geo:' . $photo->venue->location->lat . ',' . $photo->venue->location->lng;
 
-  if($photo->location && k($photo->location, 'name'))
-    $entry['place_name'] = k($photo->location, 'name');
+  if($photo->venue->name)
+    $entry['place_name'] = $photo->venue->name;
+  if($photo->venue->id)
+    $entry['place_url'] = 'https://foursquare.com/venue/'.$photo->venue->id;
 
   // Add the regular tags to the category array
+  /*
   if($photo->tags)
     $entry['category'] = array_merge($entry['category'], $photo->tags);
+  */
+   $entry['category'][] = "checkin";
+   $entry['category'][] = "foursquare";
+   $entry['category'][] = "4sq"; // city, street, plz:plz
 
   // Add person-tags to the category array
+  /*
   if($photo->users_in_photo) {
     foreach($photo->users_in_photo as $tag) {
       // Fetch the user's website
       try {
-        if($profile = IG\get_profile($user, $tag->user->id)) {
+        if($profile = FSQ\get_profile($user, $tag->user->id)) {
           if($profile->website)
             $entry['category'][] = $profile->website;
           else
-            $entry['category'][] = 'https://instagram.com/' . $profile->username;
+            $entry['category'][] = 'https://foursquare.com/' . $profile->username;
           // $entry['category'][] = [
           //   'type' => ['h-card'],
           //   'properties' => [
@@ -197,15 +208,19 @@ function h_entry_from_photo(&$user, &$photo) {
           // ];
         }
       } catch(Exception $e) {
-        $entry['category'][] = 'https://instagram.com/' . $tag->user->username;
+        $entry['category'][] = 'https://foursquare.com/' . $tag->user->username;
       }
     }
   }
+  */
 
-  if($photo->caption)
-    $entry['content'] = $photo->caption->text;
+  if(isset($photo->shout))
+    $entry['content'] = $photo->shout;
+  else
+    $entry['content'] = "";
+  	
 
-  $entry['syndication'] = $photo->link;
+  $entry['syndication'] = 'https://foursquare.com/forward/checkin/'.$photo->id;
 
   return $entry;
 }
