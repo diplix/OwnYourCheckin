@@ -24,7 +24,7 @@
         <h3>Success!</h3>
 
         <p>All required values were found! You are now signed in.</p>
-        <p><a href="/instagram" class="btn btn-primary">Connect Instagram</a></p>
+        <p><a href="/fsq" class="btn btn-primary">Connect Foursquare</a></p>
 
       <?php else: ?>
 
