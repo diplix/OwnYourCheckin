@@ -4,8 +4,9 @@ class Config {
   public static $ssl = false;
   public static $gaid = '';
 
-  public static $4sqClientID = '';
-  public static $4sqClientSecret = '';
+  public static $fsqClientID = '';
+  public static $fsqClientSecret = '';
+  public static $fsqPushSecret = '';
 
   public static $beanstalkServer = '127.0.0.1';
   public static $beanstalkPort = 11300;
@@ -15,8 +16,8 @@ class Config {
   public static $dbUsername = 'ownyourcheckin';
   public static $dbPassword = '';
 
-  public static function 4sqRedirectURI() {
-    return 'http'.(self::$ssl ? 's' : '').'://'.Config::$hostname.'/auth/4sq-callback';
+  public static function fsqRedirectURI() {
+    return 'http'.(self::$ssl ? 's' : '').'://'.Config::$hostname.'/auth/fsq-callback';
   }
 }
 
