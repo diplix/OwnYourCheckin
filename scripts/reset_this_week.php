@@ -11,5 +11,5 @@ $db = new PDO(
     Config::$dbPassword
 );
 
-$db->exec('UPDATE users SET photo_count_this_week = 0');
+$db->exec('UPDATE users SET checkin_count_this_week = 0');
 
