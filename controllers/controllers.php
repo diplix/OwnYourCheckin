@@ -12,12 +12,12 @@ function require_login(&$app) {
 $app->get('/', function($format='html') use($app) {
   $res = $app->response();
 
-  // Total number of photos
-  $total_photos = ORM::for_table('users')
-    ->sum('photo_count');
+  // Total number of checkins
+  $total_checkins = ORM::for_table('users')
+    ->sum('checkin_count');
 
   $total_users = ORM::for_table('users')
-    ->where_gt('photo_count', 0)
+    ->where_gt('checkin_count', 0)
     ->where_not_null('last_micropub_response')
     ->count();
 
@@ -28,20 +28,20 @@ $app->get('/', function($format='html') use($app) {
   }
 
   $users = ORM::for_table('users')
-    ->where('ig_public', 1)
+    //->where('fsq_public', 1)
     ->where('micropub_success', 1)
-    ->where_not_null('last_instagram_img_url')
-    ->where_gte('last_photo_date', $date->format('Y-m-d'))
-    ->where_gt('photo_count_this_week', 0)
-    ->order_by_desc('photo_count_this_week')
+    ->where_not_null('last_fsq_img_url')
+    ->where_gte('last_checkin_date', $date->format('Y-m-d'))
+    ->where_gt('checkin_count_this_week', 0)
+    ->order_by_desc('checkin_count_this_week')
     ->find_many();
 
   ob_start();
   render('index', array(
-    'title' => 'OwnYourGram',
+    'title' => 'OwnYourCheckin',
     'meta' => '',
     'users' => $users,
-    'total_photos' => $total_photos,
+    'total_checkins' => $total_checkins,
     'total_users' => $total_users
   ));
   $html = ob_get_clean();
@@ -57,28 +57,32 @@ $app->get('/creating-a-micropub-endpoint', function() use($app) {
   $app->response()->body($html);
 });
 
-$app->get('/instagram', function() use($app) {
+$app->get('/fsq', function() use($app) {
   if($user=require_login($app)) {
 
-    // If the user hasn't connected their Instagram account yet, redirect to the page to auth instagram
-    if($user->instagram_access_token == '') {
-      $app->redirect('/auth/instagram-start');
+    // If the user hasn't connected their Foursquare account yet, redirect to the page to auth Foursquare
+    if($user->fsq_access_token == '') {
+      $app->redirect('/auth/fsq-start');
     } else {
-
-      // Go fetch the latest Instagram photo and show it to them for testing the micropub endpoint
+      // Go fetch the latest Foursquare checkin and show it to them for testing the micropub endpoint
       try {
-        if($photos = IG\get_latest_photos($user)) {
-          $entry = h_entry_from_photo($user, $photos[0]);
-          $photo_url = $photos[0]->images->standard_resolution->url;
+        if($checkins = FSQ\get_latest_checkin($user)) {
+          $entry = h_entry_from_checkin($user, $checkins[0]);
+          //check if there’s a photo, if not?
+          if (count($checkins[0]->photos->items)>0) {
+          	$photo_url = $checkins[0]->photos->items[0]->prefix.'original'.$checkins[0]->photos->items[0]->suffix;
+          } else {
+          	$photo_url = "";
+          }
         } else {
           $entry = false;
-          $photo_url = false;
+          $checkin_url = false;
         }
-      } catch(IG\AccessTokenException $e) {
-        $user->instagram_access_token = '';
-        $user->instagram_response = '';
+      } catch(FSQ\AccessTokenException $e) {
+        $user->fsq_access_token = '';
+        $user->fsq_response = '';
         $user->save();
-        $app->redirect('/auth/instagram-start');
+        $app->redirect('/auth/fsq-start');
       } catch(Exception $e) {
         $html = render('auth_error', array(
           'title' => 'Error',
@@ -100,8 +104,8 @@ $app->get('/instagram', function() use($app) {
         }
       }
 
-      $html = render('instagram', array(
-        'title' => 'Instagram',
+      $html = render('fsq', array(
+        'title' => 'fsq',
         'entry' => $entry,
         'photo_url' => $photo_url,
         'micropub_endpoint' => $user->micropub_endpoint,
@@ -149,7 +153,7 @@ $app->post('/micropub/test', function() use($app) {
       $location = $match[1];
       $user->micropub_success = 1;
       $user->last_micropub_url = $location;
-      $user->photo_count = $user->photo_count + 1;
+      $user->checkin_count = $user->checkin_count + 1;
     } else {
       $location = false;
     }
