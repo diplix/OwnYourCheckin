@@ -1,16 +1,16 @@
   <div class="jumbotron">
-    <h2>#OwnYourGram</h2>
+    <h2>#OwnYourCheckin</h2>
     <p>How does it work?</p>
     <ol>
       <li>Sign in with your domain</li>
-      <li>Connect your Instagram account</li>
-      <li>When you post to Instagram, the photos will be sent to your site!</li>
+      <li>Connect your Foursquare account</li>
+      <li>When you post to Foursquare, the checkins will be sent to your site!</li>
     </ol>
     <p><a href="/signin" class="btn btn-primary btn-lg" role="button">Get Started &raquo;</a></p>
   </div>
 
   <div class="alert alert-success">
-    <i><strong><?= $this->total_photos ?></strong> grams owned by <?= $this->total_users ?> users on their own sites and counting!</i>
+    <i><strong><?= $this->total_checkins ?></strong> grams owned by <?= $this->total_users ?> users on their own sites and counting!</i>
   </div>
 
   <div class="row top-users">
@@ -28,12 +28,12 @@
     ?>
       <div class="col-xs-6 col-md-3">
         <div class="thumbnail">
-          <a href="<?= $user->last_micropub_url ?>"><img src="<?= $user->last_instagram_img_url ?>"></a>
+          <a href="<?= $user->last_micropub_url ?>"><img src="<?= $user->last_fsq_img_url ?>"></a>
           <div class="caption">
             <p><a href="<?= $user->url ?>"><?= friendly_url($user->url) ?></a></p>
             <p>
-              <?= $user->photo_count_this_week ?> this week<br>
-              <?= $user->photo_count ?> total<br>
+              <?= $user->checkin_count_this_week ?> this week<br>
+              <?= $user->checkin_count ?> total<br>
             </p>
           </div>
         </div>
