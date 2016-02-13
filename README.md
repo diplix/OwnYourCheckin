@@ -1,8 +1,11 @@
 OwnYourCheckin
 ==============
 
-build on https://github.com/aaronpk/OwnYourGram
+Build on https://github.com/aaronpk/OwnYourGram
 
+Once you signin to OwnYourCheckin and authorize Foursquare, it will get all your checkins and push them via micropub to your site.
+
+http://ownyourcheckin.wirres.net
 
 ### Contributing
 
@@ -12,6 +15,7 @@ By submitting code to this project, you agree to irrevocably release it under th
 ### License
 
 Copyright 2013 by Aaron Parecki
+Some changes by Felix Schwenzel
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
