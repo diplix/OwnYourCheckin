@@ -5,11 +5,13 @@ require 'lib/Savant.php';
 require 'lib/config.php';
 require 'lib/helpers.php';
 require 'lib/markdown.php';
-require 'lib/instagram.php';
+require 'lib/fsq.php';
+
 
 // Configure the Savant plugin
 \Slim\Extras\Views\Savant::$savantDirectory = 'vendor/saltybeagle/savant3';
 \Slim\Extras\Views\Savant::$savantOptions = array('template_path' => 'views');
+
 
 // Create a new app object with the Savant view renderer
 $app = new \Slim\Slim(array(
