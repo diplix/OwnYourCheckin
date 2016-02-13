@@ -10,7 +10,7 @@
   </div>
 
   <div class="alert alert-success">
-    <i><strong><?= $this->total_checkins ?></strong> grams owned by <?= $this->total_users ?> users on their own sites and counting!</i>
+    <i><strong><?= $this->total_checkins ?></strong> checkins owned by <?= $this->total_users ?> users on their own sites and counting!</i>
   </div>
 
   <div class="row top-users">

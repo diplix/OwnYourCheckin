@@ -66,7 +66,7 @@
   </div>
 
   <div class="footer">
-    <p class="credits">&copy; <?=date('Y')?> by <a href="http://aaronparecki.com">Aaron Parecki</a>.
+    <p class="credits">&copy; <?=date('Y')?> by <a href="http://aaronparecki.com">Aaron Parecki</a> and <a href="http://wirres.net">Felix Schwenzel</a>.
       This code is <a href="https://github.com/diplix/OwnYourCheckin">open source</a>.
       Feel free to send a pull request, or <a href="https://github.com/diplix/OwnYourCheckin/issues">file an issue</a>.</p>
   </div>
