@@ -100,6 +100,8 @@ function micropub_post($endpoint, $access_token, $params, $photo_filename=false,
     'access_token' => $access_token
   );
 
+  if(k($params, 'mp-type'))
+    $postfields['mp-type'] = $params['mp-type'];
   if(k($params, 'content'))
     $postfields['content'] = $params['content'];
   if(k($params, 'category'))
@@ -149,6 +151,7 @@ function micropub_post($endpoint, $access_token, $params, $photo_filename=false,
 // Given an Foursquare photo object, return an h-entry array with all the necessary keys
 function h_entry_from_checkin(&$user, &$photo) {
   $entry = array(
+    'mp-type' => null,
     'published' => null,
     'location' => null,
     'place_name' => null,
@@ -175,13 +178,15 @@ function h_entry_from_checkin(&$user, &$photo) {
   if($photo->venue->name)
     $entry['place_name'] = $photo->venue->name;
   if($photo->venue->id)
-    $entry['place_url'] = 'https://foursquare.com/venue/'.$photo->venue->id;
+    $entry['place_url'] = 'https://foursquare.com/venue/'.$photo->venue->id."?ref=".Config::$fsqClientID;
 
   // Add the regular tags to the category array
   /*
   if($photo->tags)
     $entry['category'] = array_merge($entry['category'], $photo->tags);
   */
+   $entry['mp-type'] = "checkin";
+
    $entry['category'][] = "checkin";
    $entry['category'][] = "foursquare";
    $entry['category'][] = "4sq"; // city, street, plz:plz
