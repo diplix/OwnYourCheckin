@@ -137,6 +137,8 @@ $app->post('/micropub/test', function() use($app) {
         $params['category'] = implode(',', $params['category']);
     }
 
+    $params['mp-type'] = 'checkin';
+
     // Download the file to a temp folder
     $filename = download_file($params['url']);
 
