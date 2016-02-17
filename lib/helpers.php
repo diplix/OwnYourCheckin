@@ -149,7 +149,7 @@ function micropub_post($endpoint, $access_token, $params, $photo_filename=false,
 }
 
 // Given an Foursquare photo object, return an h-entry array with all the necessary keys
-function h_entry_from_checkin(&$user, &$photo) {
+function h_entry_from_checkin(&$user, &$checkin) {
   $entry = array(
     'mp-type' => null,
     'published' => null,
@@ -160,41 +160,43 @@ function h_entry_from_checkin(&$user, &$photo) {
     'content' => '',
     'syndication' => ''
   );
-  //print_r($photo);
-  $entry['published'] = date('c', $photo->createdAt);
+  //print_r($checkin);
+  $entry['published'] = date('c', $checkin->createdAt);
 
   // Look up the timezone of the photo if location data is present
-  if(property_exists($photo, 'location') && $photo->venue->location) {
-    if($tz = get_timezone($photo->venue->location->lat, $photo->venue->location->lng)) {
-      $d = DateTime::createFromFormat('U', $photo->createdAt);
+  if(property_exists($checkin, 'location') && $checkin->venue->location) {
+    if($tz = get_timezone($checkin->venue->location->lat, $checkin->venue->location->lng)) {
+      $d = DateTime::createFromFormat('U', $checkin->createdAt);
       $d->setTimeZone($tz);
       $entry['published'] = $d->format('c');
     }
   }
 
-  if($photo->venue->location)
-    $entry['location'] = 'geo:' . $photo->venue->location->lat . ',' . $photo->venue->location->lng;
+  if($checkin->venue->location)
+    $entry['location'] = 'geo:' . $checkin->venue->location->lat . ',' . $checkin->venue->location->lng;
 
-  if($photo->venue->name)
-    $entry['place_name'] = $photo->venue->name;
-  if($photo->venue->id)
-    $entry['place_url'] = 'https://foursquare.com/venue/'.$photo->venue->id."?ref=".Config::$fsqClientID;
+  if($checkin->venue->name)
+    $entry['place_name'] = $checkin->venue->name;
+  if($checkin->venue->id)
+    $entry['place_url'] = 'https://foursquare.com/venue/'.$checkin->venue->id."?ref=".Config::$fsqClientID;
 
-  // Add the regular tags to the category array
-  /*
-  if($photo->tags)
-    $entry['category'] = array_merge($entry['category'], $photo->tags);
-  */
    $entry['mp-type'] = "checkin";
+
+  // Add 4sq tags to the category array
+  if(count($checkin->venue->categories) > 0)
+    foreach ($checkin->venue->categories as $category) {
+    	$entry['category'][] = $category->name;
+    }
+    //$entry['category'] = array_merge($entry['category'], $checkin->tags);
 
    $entry['category'][] = "checkin";
    $entry['category'][] = "foursquare";
-   $entry['category'][] = "4sq"; // city, street, plz:plz
+   //$entry['category'][] = "4sq"; // city, street, plz:plz
 
   // Add person-tags to the category array
   /*
-  if($photo->users_in_photo) {
-    foreach($photo->users_in_photo as $tag) {
+  if($checkin->users_in_photo) {
+    foreach($checkin->users_in_photo as $tag) {
       // Fetch the user's website
       try {
         if($profile = FSQ\get_profile($user, $tag->user->id)) {
@@ -219,13 +221,13 @@ function h_entry_from_checkin(&$user, &$photo) {
   }
   */
 
-  if(isset($photo->shout))
-    $entry['content'] = $photo->shout;
+  if(isset($checkin->shout))
+    $entry['content'] = $checkin->shout;
   else
     $entry['content'] = "";
   	
 
-  $entry['syndication'] = 'https://foursquare.com/forward/checkin/'.$photo->id;
+  $entry['syndication'] = 'https://foursquare.com/forward/checkin/'.$checkin->id;
 
   return $entry;
 }
