@@ -86,6 +86,11 @@ function process_job(&$jobData) {
             $video_filename = false;
           }
           */
+			if($checkin->venue->categories[0]->icon)
+				$entry['place_icon_url'] = $checkin->venue->categories[0]->icon->prefix."bg_120".$checkin->venue->categories[0]->icon->suffix;
+			if($checkin->sticker->image)
+				$entry['4sq_sticker_url'] = $checkin->sticker->image->prefix."50x50".$checkin->sticker->image->name;
+          
         }
         // Send the checkin to the micropub endpoint
         echo "Sending checkin" . ($video_filename ? " and video" : "") . " to micropub endpoint: ".$user->micropub_endpoint."\n";

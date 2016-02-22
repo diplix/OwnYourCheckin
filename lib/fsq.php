@@ -6,7 +6,8 @@ class AccessTokenException extends \Exception {
 
 function get_latest_checkin(&$user, $since=false, $limit=1) {
   $params = array(
-    'oauth_token' => $user->fsq_access_token
+    'oauth_token' 	=> $user->fsq_access_token,
+    'v'				=> 20160212
   );
 
   if($limit !== false)
@@ -14,8 +15,6 @@ function get_latest_checkin(&$user, $since=false, $limit=1) {
 
   if($since !== false)
     $params['afterTimestamp'] = $since;
-
-  $params['v'] = 20160212;
 
   $ch = curl_init();
   curl_setopt($ch, CURLOPT_URL, 'https://api.foursquare.com/v2/users/self/checkins?'.http_build_query($params));
@@ -36,9 +35,9 @@ function get_latest_checkin(&$user, $since=false, $limit=1) {
 }
 
 function get_profile(&$user, $fsq_user_id) {
-// todo
   $params = array(
-    'access_token' => $user->fsq_access_token
+    'oauth_token' 	=> $user->fsq_access_token,
+    'v'				=> 20160212
   );
 
   $ch = curl_init();

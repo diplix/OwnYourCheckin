@@ -110,6 +110,10 @@ function micropub_post($endpoint, $access_token, $params, $photo_filename=false,
     $postfields['place_name'] = $params['place_name'];
   if(k($params, 'place_url'))
     $postfields['place_url'] = $params['place_url'];
+  if(k($params, 'place_icon_url'))
+    $postfields['place_icon_url'] = $params['place_icon_url'];
+  if(k($params, '4sq_sticker_url'))
+    $postfields['4sq_sticker_url'] = $params['4sq_sticker_url'];
   if(k($params, 'location'))
     $postfields['location'] = $params['location'];
   if(k($params, 'published'))
