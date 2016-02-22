@@ -15,9 +15,11 @@ endif;
   <div class="row">
     <div class="col-md-4">
       <form role="form">
+		<?php if (!empty($this->photo_url)) { ?>
         <div class="form-group">
           <img src="<?= $this->photo_url ?>" class="img-thumbnail">
         </div>
+		<?php } ?>
         <div class="form-group">
           <label for="photo_content"><code>content</code></label>
           <input type="text" id="photo_content" value="<?= $this->entry['content'] ?>" class="form-control">
